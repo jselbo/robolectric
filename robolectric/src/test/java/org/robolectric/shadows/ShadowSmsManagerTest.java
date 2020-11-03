@@ -5,6 +5,8 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.PendingIntent;
@@ -266,5 +268,25 @@ public class ShadowSmsManagerTest {
     assertThat(params.getSentIntents()).isNull();
     assertThat(params.getDeliveryIntents()).isNull();
     assertThat(params.getMessageId()).isEqualTo(12312L);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void shouldGiveSmscAddress() {
+    shadowOf(smsManager).setSmscAddress("123-244-2222");
+    assertEquals("123-244-2222", smsManager.getSmscAddress());
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void getSmscAddress_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted()
+      throws Exception {
+    shadowOf(smsManager).setReadPhoneStatePermission(false);
+    try {
+      smsManager.getSmscAddress();
+      fail("SecurityException not thrown");
+    } catch (SecurityException e) {
+      // expected
+    }
   }
 }
